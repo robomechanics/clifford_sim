@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<sdf version='1.6'>
+  <model name='ground'>
+    <static>true</static>
+    <link name="link">
+      <collision name="groundCollision">
+        <geometry>
+          <mesh>
+            <scale>0.1 0.1 0.1</scale>
+            <uri>model://meshes/roughTerrain.stl</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="groundVisual">
+        <geometry>
+          <mesh>
+            <scale>0.1 0.1 0.1</scale>
+            <uri>model://meshes/roughTerrain.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+  </model>
+</sdf>
