@@ -25,11 +25,11 @@ def GenerateNoise(GAME_WIDTH):
     
     def sample(x,y):
         """Get value from list"""
-        return noise[x][y]
+        return noise[int(x)][int(y)]
     
     def setSample(x,y,e):
         """Add value to list"""
-        noise[x][y] = e
+        noise[int(x)][int(y)] = e
     
     def scaling(scale,stepSize):
         return (random.uniform(0,1)*2-1)*stepSize*scale #The Notch way
@@ -68,7 +68,6 @@ def GenerateNoise(GAME_WIDTH):
                 d = sample(x+stepSize,y+stepSize) #Bottom-right
                 
                 middle_point = (a+b+c+d)/4 + scaling(scale,stepSize)
-                
                 setSample(x+halfStep,y+halfStep,middle_point)
                 
                 y += stepSize

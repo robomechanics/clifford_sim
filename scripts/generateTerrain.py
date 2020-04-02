@@ -8,6 +8,7 @@ import random
 import math
 import numpy as np
 from stl_tools import numpy2stl
+from stl import mesh
     
 def GenerateNoise(GAME_WIDTH):
     #The size has to be 2^n+1
@@ -230,4 +231,4 @@ def GenerateSTL(GAME_WIDTH,heightScale,filename):
 
     mapHeights = mapHeights-mapHeights.min()
     mapHeights = mapHeights*heightScale+1
-    numpy2stl(mapHeights, filename, scale=1, mask_val=0, solid=True)
+    numpy2stl(mapHeights, filename, scale=1, mask_val=0, ascii=False, solid=True)

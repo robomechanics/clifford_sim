@@ -6,8 +6,6 @@ import sys
 import numpy as np
 import time
 from stl_tools import numpy2stl
-
-
 from diamond_square import * #@UnusedWildImport
 
 
@@ -33,7 +31,6 @@ SCALING = 0.1 #The size of the generated map
 #coordinates = HillAlgorithm_mod(GAME_WIDTH/SCALING,GAME_HEIGHT/SCALING)
 #coordinates = ValueNoise2(GAME_WIDTH/SCALING,GAME_HEIGHT/SCALING)
 coordinates = DiamondSquare(513) #The size has to be 2^n+1
-
 mapHeights = np.zeros((513,513))
 rowCounter = 0
 columnCounter = 0
@@ -46,4 +43,5 @@ for item in coordinates:
 
 mapHeights = mapHeights-mapHeights.min()
 mapHeights = mapHeights*SCALING+1
-numpy2stl(mapHeights, "test.stl", scale=1, mask_val=0, solid=True)
+numpy2stl(mapHeights, "roughTerrain.stl", scale=1, ascii=False, mask_val=0, solid=True)
+

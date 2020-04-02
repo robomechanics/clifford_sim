@@ -2,7 +2,8 @@
   <include
     file="$(find gazebo_ros)/launch/empty_world.launch" >
     <arg name="paused" value="true"/>
-    <!--<arg name="physics" value="dart"/>-->
+    <arg name="physics" value="dart"/>
+    <arg name="verbose" value="false" />
     </include>
   <node
     name="tf_footprint_base"
@@ -15,13 +16,13 @@
     pkg="gazebo_ros"
     type="spawn_model"
     args="-file $(find clifford_sim)/models/ground/ground.sdf -sdf -model ground -z 0"
-    output="screen" />-->
+    output="screen" />
   <node
     name="spawn_clifford"
     pkg="gazebo_ros"
     type="spawn_model"
     args="-file $(find clifford_sim)/models/cliffordClosedChain/cliffordClosedChain.sdf -sdf -model cliffordClosedChain -z 0.5"
-    output="screen" />
+    output="screen" />-->
   <node
     name="fake_joint_calibration"
     pkg="rostopic"
