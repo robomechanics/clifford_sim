@@ -27,7 +27,26 @@ class worldModifier:
     self.getModelState(modelName)
 
     """
-    def __init__(self):
+    def __init__(self,numGroundBlocksX,numGroundBlocksY,zVar,GuiWaitTime):
+        self.GuiWaitTime = GuiWaitTime
+        self.groundBlockNames = []
+        self.groundBlockMatrixXs = []
+        self.groundBlockMatrixYs = []
+        self.groundBlockXs = np.zeros((2*numGroundBlocksX+1,2*numGroundBlocksY+1))
+        self.groundBlockYs = np.zeros((2*numGroundBlocksX+1,2*numGroundBlocksY+1))
+        self.groundBlockZs = np.zeros((2*numGroundBlocksX+1,2*numGroundBlocksY+1))
+        self.zVar = zVar
+        groundCount = 0
+        for i in range(-numGroundBlocksX,numGroundBlocksX+1):
+            for j in range(-numGroundBlocksY,numGroundBlocksY+1):
+                self.groundBlockNames.append("ground"+str(groundCount))
+                MatrixX = numGroundBlocksX+i
+                MatrixY = numGroundBlocksY+j
+                self.groundBlockMatrixXs.append(MatrixX)
+                self.groundBlockMatrixYs.append(MatrixY)
+                self.groundBlockXs[MatrixX,MatrixY] = (2*i)
+                self.groundBlockYs[MatrixX,MatrixY] = (2*j)
+                groundCount = groundCount+1
         print("Waiting for gazebo services...")
         rospy.wait_for_service("gazebo/reset_simulation")
         rospy.wait_for_service('/gazebo/get_model_state')
@@ -61,67 +80,76 @@ class worldModifier:
         state_msg.pose.orientation.y = orieny
         state_msg.pose.orientation.z = orienz
         state_msg.pose.orientation.w = orienw
+        time.sleep(self.GuiWaitTime)
         self.setModelState(state_msg)
     def setUpWorld(self):
         self.pause()
         self.reset()
-        if self.worldInitialized:
-            # world already initialized, just reset world and move ground blocks
-            for i in range(len(self.groundBlocks)):
-                name = self.groundBlocks[i]
-                x = self.groundBlockXs[i]
-                y = self.groundBlockYs[i]
-                z = np.random.normal(0,0.1)
-                self.setModelPose(name,x,y,z,0,0,0,0)
-        else:
-            # set up world from scratch
-            # delete all models
-            cliffordExits = False
-            for modelName in self.getModelNames():
-                if modelName == "clifford":
-                    cliffordExits = True
-                else:
+        # set random block heights
+        self.groundBlockZs = np.random.normal(0,zVar,self.groundBlockZs.shape)
+        if not self.worldInitialized:
+            # world not initialized yet
+            modelsInWorld = self.getModelNames()
+            # delete models not supposed to be in sim
+            for modelName in modelsInWorld:
+                if (modelName!="clifford") and (not modelName in self.groundBlockNames):
                     self.delete(modelName)
-            # open sdfs
+            # import clifford if not in world already
+            if not "clifford" in modelsInWorld:
+                c = open('../models/cliffordClosedChain/cliffordClosedChain.sdf','r')
+                sdfc = c.read()
+                print("import clifford")
+                self.spawn("clifford",sdfc,"", Pose(), "world")
+            #import ground not in world already
             g = open('../models/ground/ground.sdf','r')
-            c = open('../models/cliffordClosedChain/cliffordClosedChain.sdf','r')
             sdfg = g.read()
-            sdfc = c.read()
-            # spawn
-            self.groundBlocks = []
-            self.groundBlockXs = []
-            self.groundBlockYs = []
-            cliffordPose = Pose()
-            groundCount = 0
-            for x in range(-5,6):
-                for y in range(-5,6):
-                    groundName = "ground"+str(groundCount)
-                    initial_pose = Pose()
-                    initial_pose.position.x = x*2
-                    initial_pose.position.y = y*2
-                    initial_pose.position.z = np.random.normal(0,0.1)
-                    if groundCount == 0:
-                        cliffordPose = initial_pose
-                    self.spawn(groundName,sdfg,"",initial_pose,"world")
-                    self.groundBlocks.append(groundName)
-                    self.groundBlockXs.append(initial_pose.position.x)
-                    self.groundBlockYs.append(initial_pose.position.y)
-                    groundCount = groundCount+1
-            cliffordPose.position.z = cliffordPose.position.z + 6
-            if cliffordExits:
-                self.setModelPose("clifford",cliffordPose.position.x,cliffordPose.position.y,cliffordPose.position.z,0,0,0,0)
-            else:
-                self.spawn("clifford",sdfc,"", cliffordPose, "world")
+            for i in range(len(self.groundBlockNames)):
+                if not self.groundBlockNames[i] in modelsInWorld:
+                    print("import " + self.groundBlockNames[i])
+                    self.spawn(self.groundBlockNames[i],sdfg,"",Pose(),"world")
             self.worldInitialized = True
+        # move blocks and clifford to desired position
+        for i in range(len(self.groundBlockNames)):
+            x = self.groundBlockXs[self.groundBlockMatrixXs[i],self.groundBlockMatrixYs[i]]
+            y = self.groundBlockYs[self.groundBlockMatrixXs[i],self.groundBlockMatrixYs[i]]
+            z = self.groundBlockZs[self.groundBlockMatrixXs[i],self.groundBlockMatrixYs[i]]
+            while not self.groundBlockPositionCheck(i):
+                self.setModelPose(self.groundBlockNames[i],x,y,z,0,0,0,0)
+            if i == 60:
+                z = z+6
+                self.setModelPose("clifford",x,y,z,0,0,0,0)
         self.unpause()
+    def groundBlockPositionCheck(self,blockNum):
+        check = True
+        tol = 0.0001;
+        state = self.getModelState(self.groundBlockNames[blockNum])
+        if np.abs(state.pose.position.x-self.groundBlockXs[self.groundBlockMatrixXs[blockNum],self.groundBlockMatrixYs[blockNum]])>tol:
+            check = False
+        elif np.abs(state.pose.position.y-self.groundBlockYs[self.groundBlockMatrixXs[blockNum],self.groundBlockMatrixYs[blockNum]])>tol:
+            check = False
+        elif np.abs(state.pose.position.z-self.groundBlockZs[self.groundBlockMatrixXs[blockNum],self.groundBlockMatrixYs[blockNum]])>tol:
+            check = False
+        return check
 
 
 if __name__ == '__main__':
     rospy.init_node("trainer")
-    world = worldModifier()
-    world.setUpWorld()
     cliffordCmd = rospy.Publisher('/cliffordDrive', Twist, queue_size=100)
-    linear  = Vector3(1, 1, 0.0)
+    linear  = Vector3(0, 0, 0.0)
+    angular = Vector3(0.0, 0.0, 0)
+    twist = Twist(linear, angular)
+    cliffordCmd.publish(twist)
+    numGroundBlocksX = 5 #num ground blocks in +x and -x direction (not including one at origin)
+    numGroundBlocksY = 5 #num ground blocks in +y and -y direction (not including one at origin)
+    zVar = 0.1;
+    world = worldModifier(numGroundBlocksX,numGroundBlocksY,zVar,0.015)
+    world.setUpWorld()
+    time.sleep(3)
+    linear  = Vector3(1, 0, 0.0)
     angular = Vector3(0.0, 0.0, 1)
     twist = Twist(linear, angular)
     cliffordCmd.publish(twist)
+    for i in range(0,100):
+        state = world.getModelState("clifford")
+        print(state.twist.angular.z)
+        time.sleep(0.1)
