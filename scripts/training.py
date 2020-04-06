@@ -1,32 +1,17 @@
 import rospy, tf
 from gazebo_msgs.srv import DeleteModel, SpawnModel, GetWorldProperties, SetPhysicsProperties, SetModelState, GetModelState
 from gazebo_msgs.msg import ModelState
-from geometry_msgs.msg import Twist, Vector3
+from geometry_msgs.msg import Twist, Vector3, Point
+from nav_msgs.msg import OccupancyGrid, Path
 from std_srvs.srv import Empty
 from geometry_msgs.msg import *
 import numpy as np
 import time
+from scipy.spatial.transform import Rotation as R
+import matplotlib.pyplot as plt
+
 
 class worldModifier:
-    """ example calls
-    self.reset()
-    self.pause()
-    self.unpause()
-    self.getProp()
-    self.getModelNames
-    state_msg = ModelState()
-    state_msg.model_name = 
-    state_msg.pose.position.x = 
-    state_msg.pose.position.y = 
-    state_msg.pose.position.z = 
-    state_msg.pose.orientation.x = 
-    state_msg.pose.orientation.y = 
-    state_msg.pose.orientation.z = 
-    state_msg.pose.orientation.w = 
-    self.setModelState(state_msg)
-    self.getModelState(modelName)
-
-    """
     def __init__(self,numGroundBlocksX,numGroundBlocksY,zVar,GuiWaitTime):
         self.GuiWaitTime = GuiWaitTime
         self.groundBlockNames = []
@@ -115,7 +100,7 @@ class worldModifier:
             z = self.groundBlockZs[self.groundBlockMatrixXs[i],self.groundBlockMatrixYs[i]]
             while not self.groundBlockPositionCheck(i):
                 self.setModelPose(self.groundBlockNames[i],x,y,z,0,0,0,0)
-            if i == 60:
+            if i == 0:
                 z = z+6
                 self.setModelPose("clifford",x,y,z,0,0,0,0)
         self.unpause()
@@ -131,10 +116,168 @@ class worldModifier:
             check = False
         return check
 
+def publishMap(world,mapOut):
+    numGridsPerBlock = 1;20;
+    map2publish = OccupancyGrid()
+    map2publish.info.width = numGridsPerBlock*world.groundBlockZs.shape[0]
+    map2publish.info.height = numGridsPerBlock*world.groundBlockZs.shape[1]
+    map2publish.info.resolution = 2.0/numGridsPerBlock
+    map2publish.info.origin.position.x = world.groundBlockXs[0,0]#-1
+    map2publish.info.origin.position.y = world.groundBlockYs[0,0]#-1
+    data = np.array([])
+    for j in range (world.groundBlockZs.shape[1]):
+        for k in range(numGridsPerBlock):
+            for i in range(world.groundBlockZs.shape[1]):
+                rowData = (np.ones(numGridsPerBlock))#*round(world.groundBlockZs[i,j]+1))
+                data = np.append(data,rowData)
+                #map2publish.data.append(np.ones(numGridsPerBlock)*round(world.groundBlockZs[i,j]))
+    map2publish.data = data
+    mapOut.publish(map2publish)
+    print("published")
+
+def publishCliffordSearchStart(world,startOut):
+    cliffordState = world.getModelState("clifford").pose
+    cliffordOrientation = cliffordState.orientation
+    cliffordPosition = cliffordState.position
+    r = R.from_quat([cliffordOrientation.x,cliffordOrientation.y,cliffordOrientation.z,cliffordOrientation.w])
+    v = [1,0,0]
+    v = r.apply(v)
+    theta = np.arctan2(v[1],v[0])
+    start2publish = Point()
+    start2publish.x = cliffordPosition.x
+    start2publish.y = cliffordPosition.y
+    start2publish.z = theta
+    startOut.publish(start2publish)
+
+def getPath(data):
+    print('got path')
+    global pathX
+    global pathY
+    global pathTheta
+    pathX = np.array([])
+    pathY = np.array([])
+    pathTheta = np.array([])
+    vectorX = np.array([])
+    vectorY = np.array([])
+    vectorTheta = np.array([])
+    for pose in data.poses:
+        nextX = pose.pose.position.x
+        nextY = pose.pose.position.y
+        nextTheta = pose.pose.position.z
+        vectorX = np.append(vectorX,nextX)
+        vectorY = np.append(vectorY,nextY)
+        vectorTheta = np.append(vectorTheta,nextTheta)
+        maxStep = 0.001
+        if (pathX.shape[0]>0):
+            robotTheta = pathTheta[-1]
+            rotationMatrix_rw = np.matrix([[np.cos(robotTheta),np.sin(robotTheta)],[-np.sin(robotTheta),np.cos(robotTheta)]])
+            rotationMatrix_wr = np.matrix([[np.cos(robotTheta),-np.sin(robotTheta)],[np.sin(robotTheta),np.cos(robotTheta)]])
+            stepX_w = nextX - pathX[-1]
+            stepY_w = nextY - pathY[-1]
+            stepTheta = nextTheta - pathTheta[-1]
+            stepRobot = np.matmul(rotationMatrix_rw,np.matrix([[stepX_w],[stepY_w]]))
+            #print(stepTheta)
+            stepTheta = 3.14 - 2*np.arctan(abs(stepRobot[0,0]/stepRobot[1,0]))
+            if (stepRobot[1,0]*stepRobot[0,0] < 0):
+                stepTheta = -stepTheta
+            #print(stepTheta)
+            if stepTheta == 0:
+                stepSize = stepRobot[0,0]
+                numSteps = int(np.ceil(stepSize/maxStep))
+                newStepSize = stepSize/numSteps
+                for i in range(numSteps):
+                    pathX = np.append(pathX,pathX[-1]+stepX_w*newStepSize/stepSize)
+                    pathY = np.append(pathY,pathY[-1]+stepY_w*newStepSize/stepSize)
+                    pathTheta = np.append(pathTheta,pathTheta[-1])
+            else:
+                turnRadius = abs(stepRobot[0,0])/np.sin(abs(stepTheta))
+                stepSize = turnRadius*abs(stepTheta)
+                numSteps = int(np.ceil(stepSize/maxStep))
+                newStepSize = stepSize/numSteps
+                startX = pathX[-1]
+                startY = pathY[-1]
+                startTheta = pathTheta[-1]
+                for i in range(numSteps):
+                    totalStepTheta = (i+1)*stepTheta*newStepSize/stepSize
+                    totalStepX = np.sign(stepRobot[0])*turnRadius*abs(np.sin(totalStepTheta))
+                    totalStepY = np.sign(stepRobot[1])*turnRadius*(1-np.cos(totalStepTheta))
+                    totalStepRobot = np.matrix([[totalStepX[0,0]],[totalStepY[0,0]]])
+                    totalStepWorld = np.matmul(rotationMatrix_wr,totalStepRobot)
+                    pathX = np.append(pathX,startX + totalStepWorld[0,0])
+                    pathY = np.append(pathY,startY + totalStepWorld[1,0])
+                    pathTheta = np.append(pathTheta,startTheta+totalStepTheta)
+        else:
+            pathX = np.append(pathX,nextX)
+            pathY = np.append(pathY,nextY)
+            pathTheta = np.append(pathTheta,nextTheta)
+
+        #print("x = " + str(pose.pose.position.x) + "y = " + str(pose.pose.position.y) + "theta = " + str(pose.pose.position.z))
+    pathIndex = range(pathX.shape[0])
+    vectorLength = 0.01;
+    U = vectorLength*np.cos(vectorTheta)
+    V = vectorLength*np.sin(vectorTheta)
+    #plt.quiver(vectorX,vectorY,U,V,linewidths=1)
+    plt.plot(pathX,pathY)
+    plt.xlim(-11,11)
+    plt.ylim(-11,11)
+    plt.show()
+    driveClifford()
+
+def driveClifford():
+    global world
+    global cliffordCmd
+    global pathX
+    global pathY
+    global pathZ
+    actualX = np.array([])
+    actualY = np.array([])
+    kp = np.matrix([[30],[50]])
+    kd = np.matrix([[0],[10]])
+    lastError = np.matrix([[0],[0]])
+    for i in range(pathX.shape[0]):
+        cliffordState = world.getModelState("clifford").pose
+        cliffordOrientation = cliffordState.orientation
+        cliffordPosition = cliffordState.position
+        r = R.from_quat([cliffordOrientation.x,cliffordOrientation.y,cliffordOrientation.z,cliffordOrientation.w])
+        v = [1,0,0]
+        v = r.apply(v)
+        theta = np.arctan2(v[1],v[0])
+        worldError = np.matrix([[pathX[i] - cliffordPosition.x],[pathY[i] - cliffordPosition.y]])
+        rotationMatrix_rw = np.matrix([[np.cos(theta),np.sin(theta)],[-np.sin(theta),np.cos(theta)]])
+        robotError = np.matmul(rotationMatrix_rw,worldError)
+        drive = np.multiply(kp,robotError) - np.multiply(kd,(robotError-lastError))
+        drive = np.matrix([[np.clip(drive[0,0],-1,1)],[np.clip(drive[1,0],-1,1)]])
+        lastError = robotError;
+        linear  = Vector3(drive[0,0], 0, 0.0)
+        angular = Vector3(0.0, 0.0, drive[1,0])
+        twist = Twist(linear, angular)
+        cliffordCmd.publish(twist)
+        actualX = np.append(actualX,cliffordPosition.x)
+        actualY= np.append(actualY,cliffordPosition.y)
+        print("drive " + str(drive[0,0]) + " steer" + str(drive[1,0]))
+        rospy.sleep(0.001)
+    linear  = Vector3(0, 0, 0.0)
+    angular = Vector3(0.0, 0.0, 0)
+    twist = Twist(linear, angular)
+    cliffordCmd.publish(twist)
+    plt.plot(pathX,pathY)
+    plt.plot(actualX,actualY)
+    plt.xlim(-11,11)
+    plt.ylim(-11,11)
+    plt.show()
+
+
+
 
 if __name__ == '__main__':
+    global world
+    global cliffordCmd
     rospy.init_node("trainer")
     cliffordCmd = rospy.Publisher('/cliffordDrive', Twist, queue_size=100)
+    mapOut = rospy.Publisher('/Map', OccupancyGrid, queue_size=100)
+    startOut = rospy.Publisher('/SearchStart', Point, queue_size=100)
+    goalOut = rospy.Publisher('/SearchGoal', Point, queue_size=100)
+    rospy.Subscriber('/CliffordPath',Path,getPath)
     linear  = Vector3(0, 0, 0.0)
     angular = Vector3(0.0, 0.0, 0)
     twist = Twist(linear, angular)
@@ -144,12 +287,16 @@ if __name__ == '__main__':
     zVar = 0.1;
     world = worldModifier(numGroundBlocksX,numGroundBlocksY,zVar,0.015)
     world.setUpWorld()
-    time.sleep(3)
-    linear  = Vector3(1, 0, 0.0)
-    angular = Vector3(0.0, 0.0, 1)
+    linear  = Vector3(0, 0, 0.0)
+    angular = Vector3(0.0, 0.0, 0)
     twist = Twist(linear, angular)
     cliffordCmd.publish(twist)
-    for i in range(0,100):
-        state = world.getModelState("clifford")
-        print(state.twist.angular.z)
-        time.sleep(0.1)
+    publishMap(world,mapOut)
+    publishCliffordSearchStart(world,startOut)
+    goal = Point()
+    goal.x = 0
+    goal.y = 10
+    goal.z = 0
+    time.sleep(1)
+    goalOut.publish(goal)
+    rospy.spin()

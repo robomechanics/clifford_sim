@@ -34,6 +34,9 @@ endforeach(dir)
 add_library(cliffordPlugin src/cliffordPlugin.cpp)
 target_link_libraries(cliffordPlugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
+add_executable(ackermannPlanner src/ackermannPlanner.cpp)
+target_link_libraries(ackermannPlanner ${catkin_LIBRARIES})
+
 install(TARGETS cliffordPlugin
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
