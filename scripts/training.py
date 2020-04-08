@@ -1,4 +1,7 @@
+#!/usr/bin/env python2
+
 import rospy, tf
+from os.path import dirname, join, abspath
 from gazebo_msgs.srv import DeleteModel, SpawnModel, GetWorldProperties, SetPhysicsProperties, SetModelState, GetModelState
 from gazebo_msgs.msg import ModelState
 from geometry_msgs.msg import Twist, Vector3, Point
@@ -76,17 +79,20 @@ class worldModifier:
             # world not initialized yet
             modelsInWorld = self.getModelNames()
             # delete models not supposed to be in sim
+            parentDir = dirname(dirname(abspath(__file__)))
             for modelName in modelsInWorld:
                 if (modelName!="clifford") and (not modelName in self.groundBlockNames):
                     self.delete(modelName)
             # import clifford if not in world already
             if not "clifford" in modelsInWorld:
-                c = open('../models/cliffordClosedChain/cliffordClosedChain.sdf','r')
+                sdfDir = join(parentDir, "models/cliffordClosedChain/cliffordClosedChain.sdf")
+                c = open(sdfDir,'r')
                 sdfc = c.read()
                 print("import clifford")
                 self.spawn("clifford",sdfc,"", Pose(), "world")
             #import ground not in world already
-            g = open('../models/ground/ground.sdf','r')
+            sdfDir = join(parentDir, "models/ground/ground.sdf")
+            g = open(sdfDir,'r')
             sdfg = g.read()
             for i in range(len(self.groundBlockNames)):
                 if not self.groundBlockNames[i] in modelsInWorld:
