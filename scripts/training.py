@@ -255,7 +255,7 @@ def driveClifford():
         actualX = np.append(actualX,cliffordPosition.x)
         actualY= np.append(actualY,cliffordPosition.y)
         print("drive " + str(drive[0,0]) + " steer" + str(drive[1,0]))
-        rospy.sleep(0.001)
+        rospy.sleep(0.00025)
     linear  = Vector3(0, 0, 0.0)
     angular = Vector3(0.0, 0.0, 0)
     twist = Twist(linear, angular)
@@ -265,8 +265,6 @@ def driveClifford():
     plt.xlim(-11,11)
     plt.ylim(-11,11)
     plt.show()
-
-
 
 
 if __name__ == '__main__':
@@ -284,7 +282,7 @@ if __name__ == '__main__':
     cliffordCmd.publish(twist)
     numGroundBlocksX = 5 #num ground blocks in +x and -x direction (not including one at origin)
     numGroundBlocksY = 5 #num ground blocks in +y and -y direction (not including one at origin)
-    zVar = 0.1;
+    zVar = 0;
     world = worldModifier(numGroundBlocksX,numGroundBlocksY,zVar,0.015)
     world.setUpWorld()
     linear  = Vector3(0, 0, 0.0)
@@ -294,8 +292,8 @@ if __name__ == '__main__':
     publishMap(world,mapOut)
     publishCliffordSearchStart(world,startOut)
     goal = Point()
-    goal.x = 0
-    goal.y = 10
+    goal.x = -10
+    goal.y = 5
     goal.z = 0
     time.sleep(1)
     goalOut.publish(goal)

@@ -44,7 +44,7 @@ bool robotState::IsSameState( robotState &rhs )
 
 void robotState::PrintNodeInfo()
 {
-	ROS_INFO("x = %f, y = %f, theta = %f\n",stateCoord.x,stateCoord.y,stateCoord.theta);
+	printf("x = %f, y = %f, theta = %f\n",stateCoord.x,stateCoord.y,stateCoord.theta);
 }
 
 // Here's the heuristic function that estimates the distance from a Node
@@ -85,6 +85,7 @@ bool robotState::GetSuccessors( AStarSearch<robotState> *astarsearch, robotState
 		if (successorCoords[i].cost < 100)
 		{
 			newState.stateCoord = successorCoords[i];
+			//newState.PrintNodeInfo();
 			astarsearch->AddSuccessor(newState);
 		}
 	}
@@ -104,5 +105,7 @@ float robotState::GetCost( robotState &successor )
     float thetaChange = 3.14-2*atan(abs(robotX/robotY));
     float turnRadius = robotX/sin(thetaChange);
 	float distance = abs(turnRadius*thetaChange);
-	return distance*successor.stateCoord.cost;
-}
+	float straightDist = sqrt(worldX*worldX+worldY*worldY);
+	float totalCost = (straightDist>distance ? straightDist:distance)*successor.stateCoord.cost;
+	return totalCost;
+};
