@@ -1,6 +1,18 @@
 # Clifford Robot Simulation
 The ROS package includes a Gazebo simulation of the clifford robot. Robot can be controlled through publishing commands a twist message to the ros topic "/cliffordDrive." Currently, twist's linear x controls the throttle of the robot and takes values between -1 and 1. The twist's angular z controls the forward steering and takes values between -1 and 1
 
+Any questions contact Sean Wang: sjw2@andrew.cmu.edu
+
+# Requirements
+- ROS Melodic with Gazebo
+Optional (to run scripts):
+- Python 2
+- numpy
+- time
+- scipy
+- matplot lib
+- pytorch (for training scripts)
+
 ## Basic Example
 As a basic example, run the launch file "clifford_empty_world.launch". This will start a Gazebo simulation with an empty world and import the clifford model. The user can then run the script "mouseControl.py" which will launch a GUI to control Clifford. If the user clicks and drags in the GUI, the program will convert the drag direction into a twist and command it to "/cliffordDrive".
 
