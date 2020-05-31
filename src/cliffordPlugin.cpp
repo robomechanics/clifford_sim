@@ -77,7 +77,7 @@ namespace gazebo
     {
       double K = 1;
       double R = 1;
-      float driveCommand = 10.0*_msg->linear.x;//_msg->data[0];
+      float driveCommand = 30.0*_msg->linear.x;//_msg->data[0];
       float steerCommand = -0.5*_msg->angular.z;//_msg->data[1];
       if (true)
       {
