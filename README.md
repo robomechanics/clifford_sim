@@ -5,7 +5,8 @@ Any questions contact Sean Wang: sjw2@andrew.cmu.edu
 
 # Requirements
 - ROS Melodic with Gazebo
-Optional (to run scripts):
+
+## Optional (to run scripts):
 - Python 2
 - numpy
 - time
