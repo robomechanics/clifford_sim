@@ -9,8 +9,11 @@ import numpy as np
 import time
 from scipy.spatial.transform import Rotation as R
 import matplotlib.pyplot as plt
+import rospkg
 class simController:
     def __init__(self,numGroundBlocks,zVar,numRobotMap,robotMapResolution,pathSize,GuiWaitTime,terminateParams):
+        self.cliffordSDFPath = rospkg.RosPack().get_path('clifford_sim')+'/models/clifford/clifford.sdf'
+        self.groundSDFPath = rospkg.RosPack().get_path('clifford_sim')+'/models/ground/ground.sdf'
         self.GuiWaitTime = GuiWaitTime
         self.groundBlockNames = []
         self.groundBlockMatrixXs = []
@@ -114,12 +117,14 @@ class simController:
                     self.delete(modelName)
             # import clifford if not in world already
             if not "clifford" in modelsInWorld:
-                c = open('../models/cliffordClosedChain/cliffordClosedChain.sdf','r')
+                #c = open('../models/clifford/clifford.sdf','r')
+                c = open(self.cliffordSDFPath,'r')
                 sdfc = c.read()
                 print("import clifford")
                 self.spawn("clifford",sdfc,"", Pose(), "world")
             #import ground not in world already
-            g = open('../models/ground/ground.sdf','r')
+            #g = open('../models/ground/ground.sdf','r')
+            g = open(self.groundSDFPath,'r')
             sdfg = g.read()
             pose = Pose()
             for i in range(len(self.groundBlockNames)):
