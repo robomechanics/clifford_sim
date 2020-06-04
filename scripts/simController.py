@@ -357,13 +357,18 @@ class simController:
         flw = self.getJointState("flwheel2tire").rate[0]
         brw = self.getJointState("brwheel2tire").rate[0]
         blw = self.getJointState("blwheel2tire").rate[0]
-        blw = self.getJointState("blwheel2tire").rate[0]
         steering = self.getJointState("axle2flwheel").position[0]
+        frsV = self.getJointState("frslower2upper").rate[0]
+        flsV = self.getJointState("flslower2upper").rate[0]
+        brsV = self.getJointState("brslower2upper").rate[0]
+        blsV = self.getJointState("blslower2upper").rate[0]
+        steeringV = self.getJointState("axle2flwheel").rate[0]
+
         robotState = [posVel.pose.position.x,posVel.pose.position.y,posVel.pose.position.z,\
         posVel.pose.orientation.x,posVel.pose.orientation.y,posVel.pose.orientation.z,posVel.pose.orientation.w,\
         posVel.twist.linear.x,posVel.twist.linear.y,posVel.twist.linear.z,\
         posVel.twist.angular.x,posVel.twist.angular.y,posVel.twist.angular.z,\
-        frs,fls,brs,bls,frw,flw,brw,blw,steering]
+        frs,fls,brs,bls,frw,flw,brw,blw,steering,frsV,flsV,brsV,blsV,steeringV]
         r = R.from_quat([posVel.pose.orientation.x,posVel.pose.orientation.y,posVel.pose.orientation.z,posVel.pose.orientation.w])
         x = [1,0,0]
         x = r.apply(x)
