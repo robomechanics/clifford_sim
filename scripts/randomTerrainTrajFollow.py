@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import rospy
 import numpy as np
 import matplotlib.pyplot as plt
@@ -5,8 +7,8 @@ from simController import simController
 import time
 
 if __name__ == '__main__':
-    pathsX = np.loadtxt("pathX.csv", delimiter=",")
-    pathsY = np.loadtxt("pathY.csv", delimiter=",")
+    pathsX = np.loadtxt(fname="pathX.csv", delimiter=",")
+    pathsY = np.loadtxt(fname="pathY.csv", delimiter=",")
     numGroundBlocks = 5 # number of blocks to right,left,forward, backward of the one center block
     zVar = 0.1 #variance of the height of the random ground blocks
     # below are parameters for the ground height map centered about the robot returned by sim controller in getState
