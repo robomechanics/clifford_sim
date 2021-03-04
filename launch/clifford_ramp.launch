@@ -1,0 +1,11 @@
+<launch>
+   <include file="$(find clifford_sim)/launch/clifford_empty_world.launch">
+        <arg name="world_name" value="$(find clifford_sim)/worlds/ramp.world" />        
+    </include>
+
+<!--
+    <arg name="plan_file" default="$(find clifford_sim)/scripts/robotPath.txt" />
+    <node pkg="clifford_sim" type="cliffDriver.py" name="cliffDriver" output="screen">
+        <param name="plan_file" value="$(arg plan_file)" />
+    </node>-->
+</launch>

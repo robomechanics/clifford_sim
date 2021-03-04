@@ -1,0 +1,52 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <world name="default">
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <model name="box">
+      <static>true</static>
+      <pose>0.80 0 0.15 0 1.10 0</pose><!--3 0 0 0 1.1 0-->
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>0.1 5 7</size>
+            </box>
+          </geometry>
+        <surface>
+          <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode>
+                <mu>0.35</mu>
+                <mu2>0.35</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+        </surface>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.1 5 7</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.5 0.50 0.00 1</ambient>
+            <diffuse>0.7 0.9 0 1</diffuse>
+            <specular>0.2 0.2 0.2 64</specular>
+            <emissive>0.1 0 0.1 1</emissive>
+          </material>
+        </visual>
+      </link>
+    </model>
+  </world>
+</sdf>

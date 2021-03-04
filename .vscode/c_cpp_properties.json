@@ -1,0 +1,54 @@
+{
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "",
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "/home/akshit/clifford_sim_ws/devel/include/**",
+                "/home/akshit/pit_mapping_ws/devel/include/**",
+                "/home/akshit/perception_ws/devel/include/**",
+                "/home/akshit/mastering_ros_ws/devel/include/**",
+                "/opt/ros/melodic/include/**",
+                "/home/akshit/clifford_sim_ws/src/clifford_description/include/**",
+                "/home/akshit/mastering_ros_ws/src/diff_wheeled_robot_control/include/**",
+                "/home/akshit/perception_ws/src/elevation_mapping/elevation_mapping/include/**",
+                "/opt/ros/melodic/share/fetch_gazebo/include/**",
+                "/home/akshit/clifford_sim_ws/src/gazebo_ros_pkgs/gazebo_plugins/include/**",
+                "/home/akshit/clifford_sim_ws/src/gazebo_ros_pkgs/gazebo_ros/include/**",
+                "/home/akshit/clifford_sim_ws/src/gazebo_ros_pkgs/gazebo_ros_control/include/**",
+                "/home/akshit/perception_ws/src/grid_map/grid_map_core/include/**",
+                "/home/akshit/perception_ws/src/grid_map/grid_map_costmap_2d/include/**",
+                "/home/akshit/perception_ws/src/grid_map/grid_map_cv/include/**",
+                "/home/akshit/perception_ws/src/grid_map/grid_map_demos/include/**",
+                "/home/akshit/perception_ws/src/grid_map/grid_map_filters/include/**",
+                "/home/akshit/perception_ws/src/grid_map/grid_map_loader/include/**",
+                "/home/akshit/perception_ws/src/grid_map/grid_map_octomap/include/**",
+                "/home/akshit/perception_ws/src/grid_map/grid_map_pcl/include/**",
+                "/home/akshit/perception_ws/src/grid_map/grid_map_ros/include/**",
+                "/home/akshit/perception_ws/src/grid_map/grid_map_rviz_plugin/include/**",
+                "/home/akshit/perception_ws/src/grid_map/grid_map_sdf/include/**",
+                "/home/akshit/perception_ws/src/grid_map/grid_map_visualization/include/**",
+                "/home/akshit/pit_mapping_ws/src/PitVolumeEstimation/src/hdl_graph_slam/include/**",
+                "/home/akshit/perception_ws/src/kindr/include/**",
+                "/home/akshit/perception_ws/src/kindr_ros/kindr_ros/include/**",
+                "/home/akshit/perception_ws/src/kindr_ros/kindr_rviz_plugins/include/**",
+                "/home/akshit/pit_mapping_ws/src/PitVolumeEstimation/src/LeGO-LOAM/LeGO-LOAM/include/**",
+                "/home/akshit/mastering_ros_ws/src/mastering_ros_demo_pkg/include/**",
+                "/home/akshit/mastering_ros_ws/src/mastering_ros_robot_description_pkg/include/**",
+                "/home/akshit/perception_ws/src/kindr_ros/multi_dof_joint_trajectory_rviz_plugins/include/**",
+                "/home/akshit/pit_mapping_ws/src/PitVolumeEstimation/src/ndt_omp/include/**",
+                "/home/akshit/clifford_sim_ws/src/robot_steer/include/**",
+                "/home/akshit/pit_mapping_ws/src/PitVolumeEstimation/src/velodyne_simulator/velodyne_gazebo_plugins/include/**",
+                "/usr/include/**"
+            ],
+            "name": "ROS",
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/home/akshit/ghost_robotics/arm_toolchain/bin/arm-none-eabi-gcc",
+            "cStandard": "gnu11",
+            "cppStandard": "gnu++14"
+        }
+    ],
+    "version": 4
+}

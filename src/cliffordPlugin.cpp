@@ -55,10 +55,10 @@ namespace gazebo
         this->drive[2] = this->model->GetJoint("brwheel2tire");
         this->drive[3] = this->model->GetJoint("blwheel2tire");
         this->DriveVelocityPid = common::PID(1, 0, 0);
-        this->steering = this->model->GetJoint("axle2frwheel");
+        this->steering[0] = this->model->GetJoint("axle2frwheel");
+        this->steering[1] = this->model->GetJoint("axle2brwheel");
         this->steeringPositionPid = common::PID(10,0,0);
 
-        this->model->GetJointController()->SetPositionPID(this->steering->GetScopedName(), this->steeringPositionPid);
         //this->updateConnection = event::Events::ConnectWorldUpdateBegin(boost::bind(&cliffordPlugin::OnUpdate, this, _1));
 
     }
@@ -69,7 +69,10 @@ namespace gazebo
       double timeNow = current_time.Double();
       double numOut = sin(timeNow)/2.0;
       //if (timeNow>3)
-        this->model->GetJointController()->SetPositionTarget(this->steering->GetScopedName(), numOut);
+      for(int i=0;i<2;i++)
+      {
+        this->model->GetJointController()->SetPositionTarget(this->steering[i]->GetScopedName(), numOut);
+      }
       //ROS_INFO("steering position: [%f] Joint Force: [%f]", this->steering->Position(), this->steering->GetForce(0));
     }
 
@@ -98,10 +101,14 @@ namespace gazebo
           this->drive[i]->SetForce(0,K/R*(driveCommand-K*this->drive[i]->GetVelocity(0)));
         }
       }
-      this->model->GetJointController()->SetPositionTarget(this->steering->GetScopedName(), steerCommand);
+      for(int i=0;i<2;i++)
+      {
+        this->model->GetJointController()->SetPositionPID(this->steering[i]->GetScopedName(), this->steeringPositionPid);
+        this->model->GetJointController()->SetPositionTarget(this->steering[i]->GetScopedName(), steerCommand);
+      }
     }
 
-    /// \brief ROS helper function that processes messages
+    /// brief ROS helper function that processes messages
     private: void QueueThread()
     {
       static const double timeout = 0.01;
@@ -114,7 +121,7 @@ namespace gazebo
   private:
     physics::ModelPtr model;
     physics::JointPtr drive[4];
-    physics::JointPtr steering;
+    physics::JointPtr steering[2];
     common::PID DriveVelocityPid;
     common::PID steeringPositionPid;
     event::ConnectionPtr updateConnection;

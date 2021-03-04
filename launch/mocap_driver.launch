@@ -1,0 +1,12 @@
+<launch>
+    <arg name="bag_num" default="00" />
+
+    <!--Launch node to convert pose to odometry-->
+    <node name="pose2odom" pkg="clifford_sim" type="pose2odom.py" respawn="true" output="screen"/>
+
+    <!--Record topics in ROSbag
+    <node name="rosbag_record" pkg="rosbag" type="record" args="record -o pid_test /odom /cmd_vel" respawn="true" output="screen"/>-->
+
+    <!--Launch PID controller node-->
+    <node name="double_int" pkg="clifford_sim" type="double_int.py" respawn="true" output="screen"/>
+</launch>

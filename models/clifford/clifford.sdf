@@ -895,7 +895,9 @@
     <link name='frontSteeringBar'>
       <pose frame=''> 0.342686 0.114999 -0.073995 2.87432 -2.4e-05 1.57078</pose>
     </link>
-
+    <link name='backSteeringBar'>
+      <pose frame=''> -0.342686 0.114999 -0.073995 2.87432 -2.4e-05 1.57078</pose>
+    </link>
     <!-- Joints-->
     <joint name='frontSteeringRight'  type='revolute'>
       <child>frwheel</child>
@@ -917,6 +919,39 @@
       <child>flwheel</child>
       <parent>frontSteeringBar</parent>
       <pose>0 0.2 0 0 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-3.14</lower>
+          <upper>3.14</upper>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>-->
+
+    <joint name='backSteeringRight'  type='revolute'>
+      <child>brwheel</child>
+      <parent>backSteeringBar</parent>
+      <pose>0 -0.2 0 0 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-3.14</lower>
+          <upper>3.14</upper>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <joint name='backSteeringLeft'  type='revolute'>
+      <child>blwheel</child>
+      <parent>backSteeringBar</parent>
+      <pose>0 -0.2 0 0 0 0</pose>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>

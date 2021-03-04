@@ -1,0 +1,8 @@
+<launch>
+    <!--Launch node to convert pose to odometry-->
+    <node name="pose2odom" pkg="clifford_sim" type="pose2odom.py" respawn="true" output="screen"/>
+
+    <!--Launch PID controller node-->
+    <node name="double_int" pkg="clifford_sim" type="stop_clifford.py" respawn="true" output="screen"/>
+
+</launch>
